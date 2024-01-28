@@ -7,7 +7,9 @@ class DisplayScreen extends StatefulWidget {
   final String extractedText;
   final String imagePath;
 
-  const DisplayScreen({Key? key, required this.extractedText, required this.imagePath}) : super(key: key);
+  const DisplayScreen(
+      {Key? key, required this.extractedText, required this.imagePath})
+      : super(key: key);
 
   @override
   _DisplayScreenState createState() => _DisplayScreenState();
@@ -23,54 +25,50 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   Future<void> _cropImage(BuildContext context) async {
+    try {
+      print('Avant le recadrage');
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: _croppedImagePath,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9,
+        ],
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Recadrer l\'image',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+          ),
+        ],
+      );
+      print('Après le recadrage');
 
-   try{
-    print('Avant le recadrage');
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: _croppedImagePath,
-      aspectRatioPresets: [
-        CropAspectRatioPreset.square,
-        CropAspectRatioPreset.ratio3x2,
-        CropAspectRatioPreset.original,
-        CropAspectRatioPreset.ratio4x3,
-        CropAspectRatioPreset.ratio16x9,
-      ],
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Recadrer l\'image',
-          toolbarColor: Colors.deepOrange,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: false,
-        ),
-      ],
-    );
-    print('Après le recadrage');
-
-    if (croppedFile != null) {
-      setState(() {
-        _croppedImagePath = croppedFile.path;
-      });
-    }
-
-   }catch (e) {
+      if (croppedFile != null) {
+        setState(() {
+          _croppedImagePath = croppedFile.path;
+        });
+      }
+    } catch (e) {
       print('Erreur pendant le recadrage : $e');
-    } 
-
-    
+    }
   }
 
   Future<void> _shareImageAndText(BuildContext context) async {
-   try {
-     await FlutterShare.share(
-      title: 'Partager',
-      text: widget.extractedText,
-      linkUrl: _croppedImagePath,
-      chooserTitle: 'Partager avec',
-    );
-   }catch(e) {
-       print('Erreur lors du partage : $e');
-   }
+    try {
+      await FlutterShare.share(
+        title: 'Partager',
+        text: widget.extractedText,
+        linkUrl: _croppedImagePath,
+        chooserTitle: 'Partager avec',
+      );
+    } catch (e) {
+      print('Erreur lors du partage : $e');
+    }
   }
 
   @override
@@ -86,10 +84,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Afficher l'image croppée
-              Image.file(
-                File(_croppedImagePath),
-                width: 300,
-                height: 300,
+              Container(
+                child: Image.file(
+                  File(_croppedImagePath),
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  //   height: 300,
+                ),
               ),
               SizedBox(height: 20),
 
@@ -99,10 +99,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
-              Text(
-                widget.extractedText,
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.justify,
+              Row(
+                children: [
+                  Text(
+                    widget.extractedText,
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.justify,
+                  ),
+                ],
               ),
               SizedBox(height: 20),
 
