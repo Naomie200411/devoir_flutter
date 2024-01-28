@@ -23,6 +23,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   Future<void> _cropImage(BuildContext context) async {
+
+   try{
+    print('Avant le recadrage');
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: _croppedImagePath,
       aspectRatioPresets: [
@@ -42,21 +45,32 @@ class _DisplayScreenState extends State<DisplayScreen> {
         ),
       ],
     );
+    print('Après le recadrage');
 
     if (croppedFile != null) {
       setState(() {
         _croppedImagePath = croppedFile.path;
       });
     }
+
+   }catch (e) {
+      print('Erreur pendant le recadrage : $e');
+    } 
+
+    
   }
 
   Future<void> _shareImageAndText(BuildContext context) async {
-    await FlutterShare.share(
+   try {
+     await FlutterShare.share(
       title: 'Partager',
       text: widget.extractedText,
       linkUrl: _croppedImagePath,
       chooserTitle: 'Partager avec',
     );
+   }catch(e) {
+       print('Erreur lors du partage : $e');
+   }
   }
 
   @override
