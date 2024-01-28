@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_share/flutter_share.dart';
 
-class DisplayScreen extends StatefulWidget {
+class DisplayScreen extends StatelessWidget {
   final String extractedText;
   final String imagePath;
 
@@ -11,59 +10,12 @@ class DisplayScreen extends StatefulWidget {
       {Key? key, required this.extractedText, required this.imagePath})
       : super(key: key);
 
-  @override
-  _DisplayScreenState createState() => _DisplayScreenState();
-}
-
-class _DisplayScreenState extends State<DisplayScreen> {
-  late String _croppedImagePath;
-
-  @override
-  void initState() {
-    super.initState();
-    _croppedImagePath = widget.imagePath;
-  }
-
-  Future<void> _cropImage(BuildContext context) async {
-    try {
-      print('Avant le recadrage');
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: _croppedImagePath,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9,
-        ],
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Recadrer l\'image',
-            toolbarColor: Colors.deepOrange,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false,
-          ),
-        ],
-      );
-      print('Après le recadrage');
-
-      if (croppedFile != null) {
-        setState(() {
-          _croppedImagePath = croppedFile.path;
-        });
-      }
-    } catch (e) {
-      print('Erreur pendant le recadrage : $e');
-    }
-  }
-
   Future<void> _shareImageAndText(BuildContext context) async {
     try {
       await FlutterShare.share(
         title: 'Partager',
-        text: widget.extractedText,
-        linkUrl: _croppedImagePath,
+        text: extractedText,
+        linkUrl: imagePath,
         chooserTitle: 'Partager avec',
       );
     } catch (e) {
@@ -83,13 +35,11 @@ class _DisplayScreenState extends State<DisplayScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Afficher l'image croppée
-              Container(
-                child: Image.file(
-                  File(_croppedImagePath),
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  //   height: 300,
-                ),
+              // Afficher l'image capturée
+              Image.file(
+                File(imagePath),
+                width: 300,
+                height: 300,
               ),
               SizedBox(height: 20),
 
@@ -99,23 +49,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
-              Row(
-                children: [
-                  Text(
-                    widget.extractedText,
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.justify,
-                  ),
-                ],
+              Text(
+                extractedText,
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
-
-              // Bouton pour recadrer l'image
-              ElevatedButton(
-                onPressed: () => _cropImage(context),
-                child: Text('Recadrer l\'image'),
-              ),
-              SizedBox(height: 10),
 
               // Bouton pour partager l'image et le texte
               ElevatedButton(
